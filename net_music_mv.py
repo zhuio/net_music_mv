@@ -1,4 +1,5 @@
 import requests
+import os
 
 print('请输入列表ID ')
 PLAY_LIST_ID = input()
@@ -27,22 +28,33 @@ def get_mv_urls():
 
 #下载歌曲
 def download():
-    try:
-        for mv_url in mv_urls:
-            name = requests.get(mv_url).json()['data']['name']
-            url = requests.get(mv_url).json()['data']['brs']['1080']
-            r = requests.get(url)
-            print('开始下载%s到当前的文件夹' % name)
-            with open('%s.mkv' % name, 'wb') as f:
-                f.write(r.content)
-        print('下载结束，看看去吧')
-    except Exception as e:
-        print('网易云版权问题，链接挂了')
+
+    pwd = os.path.abspath('.')
+    directory = pwd +'/'+'MV'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    for mv_url in mv_urls:
+        name = requests.get(mv_url).json()['data']['name']
+        if os.path.exists(directory+'/'+'%s.mkv' % name) == True:
+            print('已经下载过这首歌曲了，跳过......')
+            continue
+        else:
+            try:
+                url = requests.get(mv_url).json()['data']['brs']['1080']
+                r = requests.get(url)
+                print('开始下载%s到当前的文件夹' % name)
+                with open(directory+'/'+'%s.mkv' % name, 'wb') as f:
+                    f.write(r.content)
+            except Exception as e:
+                print(e)
+    print('下载结束，看看去吧')
 
 if __name__ == '__main__':
     try:
         get_mv_id()
         get_mv_urls()
+        download()
     except Exception as e:
         print('列表ID是否输对了啊？')
-    download()
+    finally:
+        download()
