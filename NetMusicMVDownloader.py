@@ -1,3 +1,4 @@
+#coding=utf-8
 import requests
 import os
 import re
@@ -7,7 +8,11 @@ class NetMV:
         self.mv_id = []
         self.mv_urls = []
     def generate(self):
-        id = re.findall(r'id=(.*)',self.url)[0]
+        try:
+            id = re.findall(r'id=(.*)',self.url)[0]
+        except Exception as e:
+            print('歌单地址有错误')
+
         j = requests.get('https://api.imjad.cn/cloudmusic/?type=playlist&id=%s' % id).json()
         ll = len(j['privileges'])
         # 获取MV ID
@@ -28,11 +33,15 @@ class NetMV:
             if os.path.exists(directory+'/'+'%s.mkv' % name) == True:
                 print('已经下载过这首歌曲了，跳过......')
             else:
-                url = requests.get(mv_url).json()['data']['brs']['1080']
-                r = requests.get(url)
-                print('开始下载%s到当前的文件夹' % name)
-                with open(directory+'/'+'%s.mkv' % name, 'wb') as f:
-                    f.write(r.content)
+                try:
+                    url = requests.get(mv_url).json()['data']['brs']['1080']
+                    r = requests.get(url)
+                    print('开始下载%s到当前的文件夹' % name)
+                    with open(directory+'/'+'%s.mkv' % name, 'wb') as f:
+                        f.write(r.content)
+                except Exception as e:
+                    print('1080')
+                
         print('下载结束，看看去吧')
 
 def main():
